@@ -43,6 +43,11 @@ command line.
 Note: The Makefile assumes the use of gcc in a Linux or Windows environment.
 Other environments may require customization.
 
+Note 2: RadixSort requires uintptr_t which C99 includes in stdint.h.  It will
+        need to be defined as an unsigned integer type that is the same size
+        as a void* object, if you're using a compiler that doesn't include
+        stdint.h.
+
 USAGE
 -----
 Usage:  sample <number of random items>

@@ -9,8 +9,12 @@
 ****************************************************************************
 *   UPDATES
 *
-*   $Id: sample.c,v 1.6 2007/09/29 01:51:52 michael Exp $
+*   $Id: sample.c,v 1.7 2010/01/07 04:16:34 michael Exp $
 *   $Log: sample.c,v $
+*   Revision 1.7  2010/01/07 04:16:34  michael
+*   - Clean-up compiler warnings.
+*   - Reduce the amount of compares for a Radix sort.
+*
 *   Revision 1.6  2007/09/29 01:51:52  michael
 *   Changes required for LGPL v3.
 *
@@ -103,7 +107,7 @@ unsigned int Byte0Key(const void *value)
 {
     /* return byte 0 of an int */
     comparisons++;
-    return (unsigned int)((*(int *)value) & 0x000000FF);
+    return (unsigned int)((*(int *)value) & 0xFF);
 }
 
 /***************************************************************************
@@ -120,7 +124,7 @@ unsigned int Byte1Key(const void *value)
 {
     /* return byte 1 of an int */
     comparisons++;
-    return (unsigned int)(((*(int *)value) >> 8) & 0x000000FF);
+    return (unsigned int)(((*(int *)value) >> 8) & 0xFF);
 }
 
 /***************************************************************************
@@ -137,7 +141,7 @@ unsigned int Byte2Key(const void *value)
 {
     /* return byte 2 of an int */
     comparisons++;
-    return (unsigned int)(((*(int *)value) >> 16) & 0x000000FF);
+    return (unsigned int)(((*(int *)value) >> 16) & 0xFF);
 }
 
 /***************************************************************************
@@ -154,7 +158,7 @@ unsigned int Byte3Key(const void *value)
 {
     /* return byte 3 of an int */
     comparisons++;
-    return (unsigned int)(((*(int *)value) >> 24) & 0x000000FF);
+    return (unsigned int)(((*(int *)value) >> 24) & 0xFF);
 }
 
 /***************************************************************************
@@ -182,7 +186,8 @@ int main(int argc, char *argv[])
         return (0);
     }
 
-    numItems = atoi(argv[1]);
+    numItems = (int)atoi((const char *)argv[1]);
+
     if (numItems < 2)
     {
         printf("At least 2 items are required for sort.\n");
@@ -205,7 +210,7 @@ int main(int argc, char *argv[])
     }
 
     /* create and display unsorted list of items */
-    srand((unsigned)time(&timer));
+    srand((unsigned int)time(&timer));
     printf("Unsorted list:\n");
     for (i = 0; i < numItems; i++)
     {
@@ -330,8 +335,11 @@ int main(int argc, char *argv[])
     /* make one Radix sort pass for every byte (LSB to MSB) */
     RadixSort((void *)list, numItems, sizeof(int), 256, Byte0Key);
     RadixSort((void *)list, numItems, sizeof(int), 256, Byte1Key);
+#if 0
+    /* this sample only uses values 0 - 999 (that's only two bytes) */
     RadixSort((void *)list, numItems, sizeof(int), 256, Byte2Key);
     RadixSort((void *)list, numItems, sizeof(int), 256, Byte3Key);
+#endif
 
     printf("Radix sorted list:\n");
     for (i = 0; i < numItems; i++)

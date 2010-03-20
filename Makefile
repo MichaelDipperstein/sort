@@ -1,7 +1,7 @@
 # Makefile for sort
 CC = gcc
 LD = gcc
-CFLAGS = -O2 -Wall -ansi -c
+CFLAGS = -O2 -Wall -Wextra -pedantic -ansi -c
 LDFLAGS = -O2 -o
 OBJS = sample.o sort.o
 

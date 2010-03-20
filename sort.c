@@ -10,8 +10,13 @@
 ****************************************************************************
 *   UPDATES
 *
-*   $Id: sort.c,v 1.7 2007/09/29 01:51:52 michael Exp $
+*   $Id: sort.c,v 1.8 2010/01/07 04:19:24 michael Exp $
 *   $Log: sort.c,v $
+*   Revision 1.8  2010/01/07 04:19:24  michael
+*   - Clean-up compiler warnings.
+*   - Correct QuickSort bug that resulted in more compares.
+*   - Correct typing in RadixSort so that it can run on 64-bit machines.
+*
 *   Revision 1.7  2007/09/29 01:51:52  michael
 *   Changes required for LGPL v3.
 *
@@ -47,6 +52,11 @@
 ***************************************************************************/
 #include "sort.h"
 #include <string.h>
+#include <stdint.h>
+
+/***************************************************************************
+*                            TYPE DEFINITIONS
+***************************************************************************/
 
 /***************************************************************************
 *                                 MACROS
@@ -54,6 +64,8 @@
 #define Swap(x, y, temp, size)      {   memcpy(temp, x, size);  \
                                         memcpy(x, y, size);     \
                                         memcpy(y, temp, size);  }
+
+#define VoidPtrOffset(ptr, offset)  (void *)((uintptr_t)(ptr) + (offset))
 
 /***************************************************************************
 *                               PROTOTYPES
@@ -85,9 +97,11 @@ int VerifySort(void *list, size_t numItems, size_t itemSize,
     size_t i, endItem;
 
     endItem = (numItems - 1) * itemSize;
+
     for (i = 0; i < endItem; i += itemSize)
     {
-        if (compareFunc((list + i), (list + i + itemSize)) > 0)
+        if (compareFunc(VoidPtrOffset(list, i),
+                VoidPtrOffset(list, (i + itemSize))) > 0)
         {
             return (FALSE);
         }
@@ -123,20 +137,23 @@ void InsertionSort(void *list, size_t numItems, size_t itemSize,
     }
 
     endItem = numItems * itemSize;
+
     for (i = itemSize; i < endItem; i += itemSize)
     {
         j = i;
-        memcpy(temp, (list + i), itemSize);
+        memcpy(temp, VoidPtrOffset(list, i), itemSize);
 
         /* look for a place to insert list[i] */
         while ((j > 0) &&
-            (compareFunc(temp, (list + j - itemSize)) < 0))
+            (compareFunc(temp, VoidPtrOffset(list, (j - itemSize))) < 0))
         {
-            memcpy((list + j), (list + j - itemSize), itemSize);
+            memcpy(VoidPtrOffset(list, j),
+                VoidPtrOffset(list, (j - itemSize)),
+                itemSize);
             j -= itemSize;
         }
 
-        memcpy((list + j), temp, itemSize);
+        memcpy(VoidPtrOffset(list, j), temp, itemSize);
     }
 
     free(temp);
@@ -178,10 +195,12 @@ void BubbleSort(void *list, size_t numItems, size_t itemSize,
         /* push largest value to end of list each iteration */
         for (i = 0; i < endItem; i += itemSize)
         {
-            if (compareFunc((list + i + itemSize), (list + i)) < 0)
+            if (compareFunc(VoidPtrOffset(list, (i + itemSize)),
+                VoidPtrOffset(list, i)) < 0)
             {
                 /* swap values */
-                Swap((list + i), (list + i + itemSize), temp, itemSize);
+                Swap(VoidPtrOffset(list, i),
+                    VoidPtrOffset(list, (i + itemSize)), temp, itemSize);
                 done = FALSE;
             }
         }
@@ -233,17 +252,20 @@ void ShellSort(void *list, size_t numItems, size_t itemSize,
         for (i = incrementItem; i < endItem; i += itemSize)
         {
             j = i;
-            memcpy(temp, (list + i), itemSize);
+            memcpy(temp, VoidPtrOffset(list, i), itemSize);
+
             /* look for a place to insert list[i] using increment spacing */
             while ((j >= incrementItem) &&
-                (compareFunc(temp, (list + j - incrementItem)) < 0))
+                (compareFunc(temp,
+                    VoidPtrOffset(list, (j - incrementItem))) < 0))
             {
-                memcpy((list + j), (list + j - incrementItem),
+                memcpy(VoidPtrOffset(list, j),
+                    VoidPtrOffset(list, (j - incrementItem)),
                     itemSize);
                 j = j - incrementItem;
             }
 
-            memcpy((list + j), temp, itemSize);
+            memcpy(VoidPtrOffset(list, j), temp, itemSize);
         }
     }
 
@@ -279,23 +301,37 @@ void QuickSort(void *list, size_t numItems, size_t itemSize,
     if (numItems > 1)
     {
         left = 0;
-        right = numItems * itemSize;
+        right = (numItems  - 1) * itemSize;
 
         while(TRUE)
         {
             /* seek until something on left partition is too large */
-            while((compareFunc((list + (left += itemSize)), list) <= 0) &&
-            (left <= right));
+            while (left < right)
+            {
+                left += itemSize;
 
-            if (left == right)
+                if (compareFunc(VoidPtrOffset(list, left), list) > 0)
+                {
+                    break;      /* found a value that's too large */
+                }
+            }
+
+            if (left > right)
             {
                 /* went too far */
-                right -= itemSize;
                 break;
             }
 
             /* seek until something on right partition is too small */
-            while(compareFunc((list + (right -= itemSize)), list) > 0);
+            while (left <= right)
+            {
+                if (compareFunc(VoidPtrOffset(list, right), list) <= 0)
+                {
+                    break;      /* found a value that's too small */
+                }
+
+                right -= itemSize;
+            }
 
             if (left >= right)
             {
@@ -304,16 +340,17 @@ void QuickSort(void *list, size_t numItems, size_t itemSize,
             }
 
             /* swap left and right */
-            Swap((list + left), (list + right), temp, itemSize);
+            Swap(VoidPtrOffset(list, left), VoidPtrOffset(list, right), temp,
+                itemSize);
         }
 
         /* found place for start */
-        Swap(list, (list + right), temp, itemSize);
+        Swap(list, VoidPtrOffset(list, right), temp, itemSize);
 
         /* sort each partition  [0 .. right] and [right + 1 .. end] */
         QuickSort(list, right / itemSize, itemSize, compareFunc);
-        QuickSort((list + right + itemSize),
-        numItems - ((right / itemSize) + 1), itemSize, compareFunc);
+        QuickSort(VoidPtrOffset(list, (right + itemSize)),
+            numItems - ((right / itemSize) + 1), itemSize, compareFunc);
     }
 
     free(temp);
@@ -335,9 +372,9 @@ void QuickSort(void *list, size_t numItems, size_t itemSize,
 void MergeSort(void *list, size_t numItems, size_t itemSize,
     int (*compareFunc) (const void *, const void *))
 {
-    int pivot;
+    size_t pivot;
     void *merged;
-    int lowPtr, highPtr, mergedPtr;
+    size_t lowPtr, highPtr, mergedPtr;
 
     if (numItems <= 1)
     {
@@ -350,10 +387,10 @@ void MergeSort(void *list, size_t numItems, size_t itemSize,
 
     /* sort each half of the list */
     MergeSort(list, (pivot + 1), itemSize, compareFunc);
-    MergeSort(list + ((pivot + 1) * itemSize), numItems - pivot - 1,
-        itemSize, compareFunc);
-
+    MergeSort(VoidPtrOffset(list, ((pivot + 1) * itemSize)),
+        numItems - pivot - 1, itemSize, compareFunc);
     merged = (void *)malloc(numItems * itemSize);
+
     if (merged == NULL)
     {
         /* couldn't get array to do merging */
@@ -373,15 +410,20 @@ void MergeSort(void *list, size_t numItems, size_t itemSize,
 
     while ((lowPtr <= pivot) && (highPtr < numItems))
     {
-        if (compareFunc((list + lowPtr), (list + highPtr)) < 0)
+        if (compareFunc(VoidPtrOffset(list, lowPtr),
+            VoidPtrOffset(list, highPtr)) < 0)
         {
-            memcpy((merged + mergedPtr), (list + lowPtr), itemSize);
+            memcpy(VoidPtrOffset(merged, mergedPtr),
+                VoidPtrOffset(list, lowPtr),
+                itemSize);
             mergedPtr += itemSize;
             lowPtr += itemSize;
         }
         else
         {
-            memcpy((merged + mergedPtr), (list + highPtr), itemSize);
+            memcpy(VoidPtrOffset(merged, mergedPtr),
+                VoidPtrOffset(list, highPtr),
+                itemSize);
             mergedPtr += itemSize;
             highPtr += itemSize;
         }
@@ -393,7 +435,9 @@ void MergeSort(void *list, size_t numItems, size_t itemSize,
         /* finish low half */
         while(highPtr < numItems)
         {
-            memcpy((merged + mergedPtr), (list + highPtr), itemSize);
+            memcpy(VoidPtrOffset(merged, mergedPtr),
+                VoidPtrOffset(list, highPtr),
+                itemSize);
             mergedPtr += itemSize;
             highPtr += itemSize;
         }
@@ -403,7 +447,9 @@ void MergeSort(void *list, size_t numItems, size_t itemSize,
         /* finish high half */
         while(lowPtr <= pivot)
         {
-            memcpy((merged + mergedPtr), (list + lowPtr), itemSize);
+            memcpy(VoidPtrOffset(merged, mergedPtr),
+                VoidPtrOffset(list, lowPtr),
+                itemSize);
             mergedPtr += itemSize;
             lowPtr += itemSize;
         }
@@ -455,23 +501,23 @@ void SiftDown(void *list, size_t root, size_t lastChild, size_t itemSize,
         if (child < lastChild)
         {
             /* there is a right child */
-            if (compareFunc((list + (child * itemSize)),
-                (list + ((child + 1) * itemSize))) < 0)
+            if (compareFunc(VoidPtrOffset(list, (child * itemSize)),
+                VoidPtrOffset(list, ((child + 1) * itemSize))) < 0)
             {
                 /* right child is actually larger */
                 child++;
             }
         }
 
-        if (compareFunc((list + (child * itemSize)),
-            (list + (root * itemSize))) <= 0)
+        if (compareFunc(VoidPtrOffset(list, (child * itemSize)),
+            VoidPtrOffset(list, (root * itemSize))) <= 0)
         {
             break;
         }
 
         /* child is greater than its parent, swap them */
-        Swap((list + (root * itemSize)), (list + (child * itemSize)),
-            temp, itemSize);
+        Swap((void *)VoidPtrOffset(list, (root * itemSize)),
+            VoidPtrOffset(list, (child * itemSize)), temp, itemSize);
     }
 
     free(temp);
@@ -524,7 +570,7 @@ void HeapSort(void *list, size_t numItems, size_t itemSize,
     while (numItems > 1)
     {
         /* swap the largest item with the last item in the heap */
-        Swap(list, (list + ((numItems - 1) * itemSize)), temp,
+        Swap(list, VoidPtrOffset(list, ((numItems - 1) * itemSize)) , temp,
             itemSize);
 
         /* make the heap one item smaller and rebuild the heap */
@@ -555,14 +601,14 @@ void HeapSort(void *list, size_t numItems, size_t itemSize,
 void RadixSort(void *list, size_t numItems, size_t itemSize,
     unsigned int numKeys, unsigned int (*keyFunc) (const void *))
 {
-    unsigned int *keyCounters;      /* num values with the same key */
+    size_t *keyCounters;            /* num values with the same key */
     size_t *offsetTable;            /* position of next value with key */
     size_t i;
-    size_t key;
+    unsigned int key;
     void *temp;
 
     /* create an array of zeroed key counters */
-    keyCounters = (unsigned int *)calloc(numKeys, sizeof(unsigned int));
+    keyCounters = (size_t *)calloc(numKeys, sizeof(size_t));
 
     if (keyCounters == NULL)
     {
@@ -572,12 +618,12 @@ void RadixSort(void *list, size_t numItems, size_t itemSize,
     /* count occurances of values with same key */
     for (i = 0; i < numItems; i++)
     {
-        key = keyFunc(list + (itemSize * i));
+        key = keyFunc(VoidPtrOffset(list, (itemSize * i)));
         keyCounters[key] = keyCounters[key] + 1;
     }
 
     /* allocate offset table */
-    offsetTable = (unsigned int *)malloc(numKeys * sizeof(unsigned int));
+    offsetTable = (size_t *)malloc(numKeys * sizeof(size_t));
 
     if (offsetTable == NULL)
     {
@@ -594,7 +640,7 @@ void RadixSort(void *list, size_t numItems, size_t itemSize,
 
     free(keyCounters);          /* we're done with keyCounters now */
 
-    temp = malloc(numItems * itemSize);
+    temp = (void *)malloc(numItems * itemSize);
 
     if (temp == NULL)
     {
@@ -604,11 +650,11 @@ void RadixSort(void *list, size_t numItems, size_t itemSize,
     /* now sort */
     for (i = 0; i < numItems; i++)
     {
-        key = keyFunc(list + (itemSize * i));
+        key = keyFunc(VoidPtrOffset(list, (itemSize * i)));
 
         /* copy list + (itemSize * i) into its sorted position */
-        memcpy(temp + (offsetTable[key] * itemSize),
-            list + (itemSize * i),
+        memcpy(VoidPtrOffset(temp, (offsetTable[key] * itemSize)),
+            VoidPtrOffset(list, (itemSize * i)),
             itemSize);
 
         /* the next item with the same key is sorted one position higher */
