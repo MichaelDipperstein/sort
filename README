@@ -1,0 +1,57 @@
+DESCRIPTION
+-----------
+This archive contains a simple and readable ANSI C implementation of the
+following sorting algorithms:
+- Insertion Sort
+- Bubble Sort
+- Shell Sort
+- Quick Sort
+- Merge Sort
+- Heap Sort
+- Radix Sort
+
+My implementation is not intended to be the best or the fastest.  It is intended
+to be a flexible, portable example of techniques used to sort items.  I
+implemented these algorithms out of personal interest.
+
+Each of the sort functions provided takes a speed hit for accepting generic data
+types and a generic compare function.  Hard coding the data types and compare
+function will speed up each function at the cost of flexibility.  I chose the
+slower approach for two reasons:
+1. The functions don't have to be rewritten for each type of data sorted.
+2. Any intro to programming professor will quickly recognize that these
+   functions are not the work of his/her students.
+
+More information on these sort algorithms may be found at:
+http://michael.dipperstein.com/sort
+
+FILES
+-----
+COPYING         - Rules for copying and distributing GPL software
+COPYING.LESSER  - Rules for copying and distributing LGPL software
+Makefile        - Makefile for this project (assumes gcc compiler and GNU make)
+README          - This file
+sample.c        - Sample code demonstrating usage of the sort library
+sort.h          - Header file for the sort library
+sort.c          - Implementation of the sort library
+
+BUILDING
+--------
+To build these files with GNU make and gcc, simply enter "make" from the
+command line.
+
+Note: The Makefile assumes the use of gcc in a Linux or Windows environment.
+Other environments may require customization.
+
+USAGE
+-----
+Usage:  sample <number of random items>
+
+The sample code will generate an unsorted list of <number of random items>
+values, then sort the list using each of the algorithms included in the library.
+The unsorted list, sorted list, and time to sort will be written to stdout.
+
+AUTHOR
+------
+Michael Dipperstein (mdipper@alumni.engr.ucsb.edu)
+http://michael.dipperstein.com
