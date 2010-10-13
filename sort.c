@@ -52,7 +52,7 @@
 ***************************************************************************/
 #include "sort.h"
 #include <string.h>
-#include <stdint.h>
+#include <assert.h>
 
 /***************************************************************************
 *                            TYPE DEFINITIONS
@@ -65,13 +65,13 @@
                                         memcpy(x, y, size);     \
                                         memcpy(y, temp, size);  }
 
-#define VoidPtrOffset(ptr, offset)  (void *)((uintptr_t)(ptr) + (offset))
+#define VoidPtrOffset(ptr, offset)  (void *)(&((char *)ptr)[offset])
 
 /***************************************************************************
 *                               PROTOTYPES
 ***************************************************************************/
 void SiftDown(void *list, size_t root, size_t lastChild, size_t itemSize,
-    int (*compareFunc) (const void *, const void *));
+    int (*compareFunc) (const void *, const void *), void *temp);
 
 /***************************************************************************
 *                                FUNCTIONS
@@ -131,10 +131,7 @@ void InsertionSort(void *list, size_t numItems, size_t itemSize,
 
     /* create temporary swap variable */
     temp = malloc(itemSize);
-    if (temp == NULL)
-    {
-        return;
-    }
+    assert(temp != NULL);
 
     endItem = numItems * itemSize;
 
@@ -181,10 +178,7 @@ void BubbleSort(void *list, size_t numItems, size_t itemSize,
 
     /* create temporary swap variable */
     temp = malloc(itemSize);
-    if (temp == NULL)
-    {
-        return;
-    }
+    assert(temp != NULL);
 
     while (!done)
     {
@@ -231,10 +225,7 @@ void ShellSort(void *list, size_t numItems, size_t itemSize,
 
     /* create temporary swap variable */
     temp = malloc(itemSize);
-    if (temp == NULL)
-    {
-        return;
-    }
+    assert(temp != NULL);
 
     /* determine starting increment size in the form of (3^k - 1) */
     for (increment = 1;
@@ -291,15 +282,12 @@ void QuickSort(void *list, size_t numItems, size_t itemSize,
     size_t left, right;         /* partition pointers */
     void *temp;
 
-    /* create temporary swap variable */
-    temp = malloc(itemSize);
-    if (temp == NULL)
-    {
-        return;
-    }
-
     if (numItems > 1)
     {
+        /* create temporary swap variable */
+        temp = malloc(itemSize);
+        assert(temp != NULL);
+
         left = 0;
         right = (numItems  - 1) * itemSize;
 
@@ -346,14 +334,13 @@ void QuickSort(void *list, size_t numItems, size_t itemSize,
 
         /* found place for start */
         Swap(list, VoidPtrOffset(list, right), temp, itemSize);
+        free(temp);
 
         /* sort each partition  [0 .. right] and [right + 1 .. end] */
         QuickSort(list, right / itemSize, itemSize, compareFunc);
         QuickSort(VoidPtrOffset(list, (right + itemSize)),
             numItems - ((right / itemSize) + 1), itemSize, compareFunc);
     }
-
-    free(temp);
 }
 
 /***************************************************************************
@@ -389,18 +376,14 @@ void MergeSort(void *list, size_t numItems, size_t itemSize,
     MergeSort(list, (pivot + 1), itemSize, compareFunc);
     MergeSort(VoidPtrOffset(list, ((pivot + 1) * itemSize)),
         numItems - pivot - 1, itemSize, compareFunc);
-    merged = (void *)malloc(numItems * itemSize);
 
-    if (merged == NULL)
-    {
-        /* couldn't get array to do merging */
-        return;
-    }
+    merged = malloc(numItems * itemSize);
+    assert(merged != NULL);
 
     /***********************************************************************
     * merge list[0] .. list[pivot] with
     * list[pivot + 1] .. list[numItems - 1]
-    * Indices are itemSize from here on out
+    * Indices are multiples of itemSize from here on out
     ************************************************************************/
     pivot *=  itemSize;
     numItems *= itemSize;
@@ -410,13 +393,13 @@ void MergeSort(void *list, size_t numItems, size_t itemSize,
 
     while ((lowPtr <= pivot) && (highPtr < numItems))
     {
+        /* copy lowest value pointed to into merged list */
         if (compareFunc(VoidPtrOffset(list, lowPtr),
             VoidPtrOffset(list, highPtr)) < 0)
         {
             memcpy(VoidPtrOffset(merged, mergedPtr),
                 VoidPtrOffset(list, lowPtr),
                 itemSize);
-            mergedPtr += itemSize;
             lowPtr += itemSize;
         }
         else
@@ -424,15 +407,16 @@ void MergeSort(void *list, size_t numItems, size_t itemSize,
             memcpy(VoidPtrOffset(merged, mergedPtr),
                 VoidPtrOffset(list, highPtr),
                 itemSize);
-            mergedPtr += itemSize;
             highPtr += itemSize;
         }
+
+        mergedPtr += itemSize;
     }
 
     /* one of the halves ran out of data, just copy from the other half */
     if (lowPtr > pivot)
     {
-        /* finish low half */
+        /* finish high half */
         while(highPtr < numItems)
         {
             memcpy(VoidPtrOffset(merged, mergedPtr),
@@ -444,7 +428,7 @@ void MergeSort(void *list, size_t numItems, size_t itemSize,
     }
     else
     {
-        /* finish high half */
+        /* finish low half */
         while(lowPtr <= pivot)
         {
             memcpy(VoidPtrOffset(merged, mergedPtr),
@@ -478,22 +462,15 @@ void MergeSort(void *list, size_t numItems, size_t itemSize,
 *                   compareFunc(x, y) < 0  iff x precedes y
 *                   compareFunc(x, y) = 0  iff x and y are ordered the same
 *                   compareFunc(x, y) > 0  iff y precedes x
+*                temp - a temporary variable for use by Swap() function
 *   Effects    : Promotes (sifts up) children larger than their parents
 *                along a path starting at root.
 *   Returned   : NONE
 ***************************************************************************/
 void SiftDown(void *list, size_t root, size_t lastChild, size_t itemSize,
-    int (*compareFunc) (const void *, const void *))
+    int (*compareFunc) (const void *, const void *), void *temp)
 {
     size_t child;
-    void *temp;
-
-    /* create temporary swap variable */
-    temp = malloc(itemSize);
-    if (temp == NULL)
-    {
-        return;
-    }
 
     for (; (child = (root * 2) + 1) <= lastChild; root = child)
     {
@@ -519,8 +496,6 @@ void SiftDown(void *list, size_t root, size_t lastChild, size_t itemSize,
         Swap((void *)VoidPtrOffset(list, (root * itemSize)),
             VoidPtrOffset(list, (child * itemSize)), temp, itemSize);
     }
-
-    free(temp);
 }
 
 /***************************************************************************
@@ -539,7 +514,7 @@ void SiftDown(void *list, size_t root, size_t lastChild, size_t itemSize,
 void HeapSort(void *list, size_t numItems, size_t itemSize,
     int (*compareFunc) (const void *, const void *))
 {
-    int i;
+    size_t i;
     void *temp;
 
     if (numItems <= 1)
@@ -549,16 +524,15 @@ void HeapSort(void *list, size_t numItems, size_t itemSize,
 
     /* create temporary swap variable */
     temp = malloc(itemSize);
-    if (temp == NULL)
-    {
-        return;
-    }
+    assert(temp != NULL);
 
     /* build a heap adding one element at a time */
-    for (i = numItems / 2; i >= 0; i--)
+    for (i = numItems / 2; i > 0; i--)
     {
-        SiftDown(list, i, numItems - 1, itemSize, compareFunc);
+        SiftDown(list, i, numItems - 1, itemSize, compareFunc, temp);
     }
+
+    SiftDown(list, 0, numItems - 1, itemSize, compareFunc, temp);
 
     /***********************************************************************
     * The largest item is now at the top of the heap.  Pull it off the
@@ -575,7 +549,7 @@ void HeapSort(void *list, size_t numItems, size_t itemSize,
 
         /* make the heap one item smaller and rebuild the heap */
         numItems--;
-        SiftDown(list, 0, numItems - 1, itemSize, compareFunc);
+        SiftDown(list, 0, numItems - 1, itemSize, compareFunc, temp);
     }
 
     free(temp);
@@ -609,11 +583,7 @@ void RadixSort(void *list, size_t numItems, size_t itemSize,
 
     /* create an array of zeroed key counters */
     keyCounters = (size_t *)calloc(numKeys, sizeof(size_t));
-
-    if (keyCounters == NULL)
-    {
-        return;
-    }
+    assert(keyCounters != NULL);
 
     /* count occurances of values with same key */
     for (i = 0; i < numItems; i++)
@@ -624,11 +594,7 @@ void RadixSort(void *list, size_t numItems, size_t itemSize,
 
     /* allocate offset table */
     offsetTable = (size_t *)malloc(numKeys * sizeof(size_t));
-
-    if (offsetTable == NULL)
-    {
-        return;
-    }
+    assert(offsetTable != NULL);
 
     offsetTable[0] = 0;         /* the first key 0 item starts at 0 */
 
@@ -640,12 +606,8 @@ void RadixSort(void *list, size_t numItems, size_t itemSize,
 
     free(keyCounters);          /* we're done with keyCounters now */
 
-    temp = (void *)malloc(numItems * itemSize);
-
-    if (temp == NULL)
-    {
-        return;
-    }
+    temp = malloc(numItems * itemSize);
+    assert(temp != NULL);
 
     /* now sort */
     for (i = 0; i < numItems; i++)

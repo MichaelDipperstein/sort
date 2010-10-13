@@ -49,6 +49,8 @@
 #include <string.h>
 #include <time.h>
 #include <limits.h>
+#include <stdint.h>
+#include <inttypes.h>
 #include "sort.h"
 #include "optlist.h"
 
@@ -94,8 +96,25 @@ void ShowUsage(char *progPath);
 ***************************************************************************/
 int CompareIntLessThan(const void *x, const void *y)
 {
+    int64_t diff;
+
     comparisons++;
-    return (*(int *)x - *(int *)y);
+    diff = (*(int64_t *)x - *(int64_t *)y);
+
+    if (diff < 0)
+    {
+        diff = -1;
+    }
+    else if (diff > 0)
+    {
+        diff = 1;
+    }
+    else
+    {
+        diff = 0;
+    }
+
+    return diff;
 }
 
 /***************************************************************************
@@ -111,8 +130,25 @@ int CompareIntLessThan(const void *x, const void *y)
 ***************************************************************************/
 int CompareIntGreaterThan(const void *x, const void *y)
 {
+    int64_t diff;
+
     comparisons++;
-    return (*(int *)y - *(int *)x);
+    diff = (*(int64_t *)y - *(int64_t *)x);
+
+    if (diff < 0)
+    {
+        diff = -1;
+    }
+    else if (diff > 0)
+    {
+        diff = 1;
+    }
+    else
+    {
+        diff = 0;
+    }
+
+    return diff;
 }
 
 /***************************************************************************
@@ -129,7 +165,7 @@ unsigned int Byte0Key(const void *value)
 {
     /* return byte 0 of an int */
     comparisons++;
-    return (unsigned int)((*(int *)value) & 0xFF);
+    return (unsigned int)((*(int64_t *)value) & 0xFF);
 }
 
 /***************************************************************************
@@ -146,7 +182,7 @@ unsigned int Byte1Key(const void *value)
 {
     /* return byte 1 of an int */
     comparisons++;
-    return (unsigned int)(((*(int *)value) >> 8) & 0xFF);
+    return (unsigned int)(((*(int64_t *)value) >> 8) & 0xFF);
 }
 
 /***************************************************************************
@@ -163,7 +199,7 @@ unsigned int Byte2Key(const void *value)
 {
     /* return byte 2 of an int */
     comparisons++;
-    return (unsigned int)(((*(int *)value) >> 16) & 0xFF);
+    return (unsigned int)(((*(int64_t *)value) >> 16) & 0xFF);
 }
 
 /***************************************************************************
@@ -180,9 +216,9 @@ unsigned int Byte3Key(const void *value)
 {
     /* return byte 3 of an int */
     comparisons++;
-    return (unsigned int)(((*(int *)value) >> 24) & 0xFF);
+    return (unsigned int)(((*(int64_t *)value) >> 24) & 0xFF);
 }
-#if UINT_MAX > 0xFFFFFFFFU
+
 /***************************************************************************
 *   Function   : Byte4Key
 *   Description: This function may be used by my RadixSort function to
@@ -197,7 +233,7 @@ unsigned int Byte4Key(const void *value)
 {
     /* return byte 4 of an int */
     comparisons++;
-    return (unsigned int)(((*(int *)value) >> 32) & 0xFF);
+    return (unsigned int)(((*(int64_t *)value) >> 32) & 0xFF);
 }
 
 /***************************************************************************
@@ -214,7 +250,7 @@ unsigned int Byte5Key(const void *value)
 {
     /* return byte 5 of an int */
     comparisons++;
-    return (unsigned int)(((*(int *)value) >> 40) & 0xFF);
+    return (unsigned int)(((*(int64_t *)value) >> 40) & 0xFF);
 }
 
 /***************************************************************************
@@ -231,7 +267,7 @@ unsigned int Byte6Key(const void *value)
 {
     /* return byte 6 of an int */
     comparisons++;
-    return (unsigned int)(((*(int *)value) >> 48) & 0xFF);
+    return (unsigned int)(((*(int64_t *)value) >> 48) & 0xFF);
 }
 
 /***************************************************************************
@@ -248,9 +284,8 @@ unsigned int Byte7Key(const void *value)
 {
     /* return byte 7 of an int */
     comparisons++;
-    return (unsigned int)(((*(int *)value) >> 56) & 0xFF);
+    return (unsigned int)(((*(int64_t *)value) >> 56) & 0xFF);
 }
-#endif
 
 /***************************************************************************
 *   Function   : DumpList
@@ -261,13 +296,13 @@ unsigned int Byte7Key(const void *value)
 *   Effects    : Array contents are printed to stdout
 *   Returned   : NONE
 ***************************************************************************/
-void DumpList(int *list, size_t numItems)
+void DumpList(int64_t *list, size_t numItems)
 {
     size_t i;
 
     for (i = 0; i < numItems; i++)
     {
-        printf("%d ", list[i]);
+        printf("%016" PRIX64 " ", list[i]);
     }
 
     printf("\n");
@@ -287,7 +322,7 @@ void DumpList(int *list, size_t numItems)
 int main(int argc, char *argv[])
 {
     size_t numItems;                    /* number of items sorted */
-    int *list, *unsorted;               /* items to be sorted */
+    int64_t *list, *unsorted;           /* items to be sorted */
     size_t i;                           /* counter */
     time_t timer;                       /* time - used for random seed */
     unsigned char debug;                /* non-zero prints debug messages */
@@ -385,14 +420,14 @@ int main(int argc, char *argv[])
     }
 
     /* allocate memory for sorted and unsorted lists */
-    unsorted = (int *)malloc(numItems * sizeof(int));
+    unsorted = (int64_t *)malloc(numItems * sizeof(int64_t));
     if (unsorted == NULL)
     {
         printf("Unable to allocate storage for %d items.\n", numItems);
         return EXIT_FAILURE;
     }
 
-    list = (int *)malloc(numItems * sizeof(int));
+    list = (int64_t *)malloc(numItems * sizeof(int64_t));
     if (list == NULL)
     {
         printf("Unable to allocate storage for %d items.\n", numItems);
@@ -405,6 +440,12 @@ int main(int argc, char *argv[])
     for (i = 0; i < numItems; i++)
     {
         unsorted[i] = rand();
+
+        if (sizeof(int) == 4)
+        {
+            unsorted[i] <<= 32;
+            unsorted[i] |= rand();
+        }
     }
 
     if (debug)
@@ -416,9 +457,10 @@ int main(int argc, char *argv[])
     /* --- Insertion Sort --- */
     if (methods & METHOD_INSERTION)
     {
-        memcpy((void *)list, (void *)unsorted, numItems * sizeof(int));
+        memcpy((void *)list, (void *)unsorted, numItems * sizeof(int64_t));
         comparisons = 0;
-        InsertionSort((void *)list, numItems, sizeof(int), CompareIntLessThan);
+        InsertionSort((void *)list, numItems, sizeof(int64_t),
+            CompareIntLessThan);
 
         printf("Insertion sort:\n");
 
@@ -431,7 +473,7 @@ int main(int argc, char *argv[])
         printf("Number of comparisons to sort %d Items: %lu\n",
             numItems, comparisons);
 
-        if (!VerifySort((void *)list, numItems, sizeof(int),
+        if (!VerifySort((void *)list, numItems, sizeof(int64_t),
             CompareIntLessThan))
         {
             printf("ERROR: Sort results are incorrect.\n");
@@ -441,9 +483,9 @@ int main(int argc, char *argv[])
     /* --- Bubble Sort --- */
     if (methods & METHOD_BUBBLE)
     {
-        memcpy((void *)list, (void *)unsorted, numItems * sizeof(int));
+        memcpy((void *)list, (void *)unsorted, numItems * sizeof(int64_t));
         comparisons = 0;
-        BubbleSort((void *)list, numItems, sizeof(int), CompareIntLessThan);
+        BubbleSort((void *)list, numItems, sizeof(int64_t), CompareIntLessThan);
 
 
         printf("Bubble sort:\n");
@@ -457,7 +499,7 @@ int main(int argc, char *argv[])
         printf("Number of comparisons to sort %d Items: %lu\n",
             numItems, comparisons);
 
-        if (!VerifySort((void *)list, numItems, sizeof(int),
+        if (!VerifySort((void *)list, numItems, sizeof(int64_t),
             CompareIntLessThan))
         {
             printf("ERROR: Sort results are incorrect.\n");
@@ -467,9 +509,9 @@ int main(int argc, char *argv[])
     /* --- Shell Sort --- */
     if (methods & METHOD_SHELL)
     {
-        memcpy((void *)list, (void *)unsorted, numItems * sizeof(int));
+        memcpy((void *)list, (void *)unsorted, numItems * sizeof(int64_t));
         comparisons = 0;
-        ShellSort((void *)list, numItems, sizeof(int), CompareIntLessThan);
+        ShellSort((void *)list, numItems, sizeof(int64_t), CompareIntLessThan);
 
         printf("Shell sort:\n");
 
@@ -482,7 +524,7 @@ int main(int argc, char *argv[])
         printf("Number of comparisons to sort %d Items: %lu\n",
             numItems, comparisons);
 
-        if (!VerifySort((void *)list, numItems, sizeof(int),
+        if (!VerifySort((void *)list, numItems, sizeof(int64_t),
             CompareIntLessThan))
         {
             printf("ERROR: Sort results are incorrect.\n");
@@ -492,9 +534,9 @@ int main(int argc, char *argv[])
     /* --- Quick Sort --- */
     if (methods & METHOD_QUICK)
     {
-        memcpy((void *)list, (void *)unsorted, numItems * sizeof(int));
+        memcpy((void *)list, (void *)unsorted, numItems * sizeof(int64_t));
         comparisons = 0;
-        QuickSort((void *)list, numItems, sizeof(int), CompareIntLessThan);
+        QuickSort((void *)list, numItems, sizeof(int64_t), CompareIntLessThan);
 
         printf("Quick sort:\n");
 
@@ -507,7 +549,7 @@ int main(int argc, char *argv[])
         printf("Number of comparisons to sort %d Items: %lu\n",
             numItems, comparisons);
 
-        if (!VerifySort((void *)list, numItems, sizeof(int),
+        if (!VerifySort((void *)list, numItems, sizeof(int64_t),
             CompareIntLessThan))
         {
             printf("ERROR: Sort results are incorrect.\n");
@@ -517,9 +559,9 @@ int main(int argc, char *argv[])
     /* --- Merge Sort --- */
     if (methods & METHOD_MERGE)
     {
-        memcpy((void *)list, (void *)unsorted, numItems * sizeof(int));
+        memcpy((void *)list, (void *)unsorted, numItems * sizeof(int64_t));
         comparisons = 0;
-        MergeSort((void *)list, numItems, sizeof(int), CompareIntLessThan);
+        MergeSort((void *)list, numItems, sizeof(int64_t), CompareIntLessThan);
 
         printf("Merge sort:\n");
 
@@ -532,7 +574,7 @@ int main(int argc, char *argv[])
         printf("Number of comparisons to sort %d Items: %lu\n",
             numItems, comparisons);
 
-        if (!VerifySort((void *)list, numItems, sizeof(int),
+        if (!VerifySort((void *)list, numItems, sizeof(int64_t),
             CompareIntLessThan))
         {
             printf("ERROR: Sort results are incorrect.\n");
@@ -542,9 +584,9 @@ int main(int argc, char *argv[])
     /* --- Heap Sort --- */
     if (methods & METHOD_HEAP)
     {
-        memcpy((void *)list, (void *)unsorted, numItems * sizeof(int));
+        memcpy((void *)list, (void *)unsorted, numItems * sizeof(int64_t));
         comparisons = 0;
-        HeapSort((void *)list, numItems, sizeof(int), CompareIntLessThan);
+        HeapSort((void *)list, numItems, sizeof(int64_t), CompareIntLessThan);
 
         printf("Heap sort:\n");
 
@@ -557,7 +599,7 @@ int main(int argc, char *argv[])
         printf("Number of comparisons to sort %d Items: %lu\n",
             numItems, comparisons);
 
-        if (!VerifySort((void *)list, numItems, sizeof(int),
+        if (!VerifySort((void *)list, numItems, sizeof(int64_t),
             CompareIntLessThan))
         {
             printf("ERROR: Sort results are incorrect.\n");
@@ -567,20 +609,18 @@ int main(int argc, char *argv[])
     /* --- Radix Sort --- */
     if (methods & METHOD_RADIX)
     {
-        memcpy((void *)list, (void *)unsorted, numItems * sizeof(int));
+        memcpy((void *)list, (void *)unsorted, numItems * sizeof(int64_t));
         comparisons = 0;
 
         /* make one Radix sort pass for every byte (LSB to MSB) */
-        RadixSort((void *)list, numItems, sizeof(int), 256, Byte0Key);
-        RadixSort((void *)list, numItems, sizeof(int), 256, Byte1Key);
-        RadixSort((void *)list, numItems, sizeof(int), 256, Byte2Key);
-        RadixSort((void *)list, numItems, sizeof(int), 256, Byte3Key);
-#if UINT_MAX > 0xFFFFFFFFU
-        RadixSort((void *)list, numItems, sizeof(int), 256, Byte4Key);
-        RadixSort((void *)list, numItems, sizeof(int), 256, Byte5Key);
-        RadixSort((void *)list, numItems, sizeof(int), 256, Byte6Key);
-        RadixSort((void *)list, numItems, sizeof(int), 256, Byte7Key);
-#endif
+        RadixSort((void *)list, numItems, sizeof(int64_t), 256, Byte0Key);
+        RadixSort((void *)list, numItems, sizeof(int64_t), 256, Byte1Key);
+        RadixSort((void *)list, numItems, sizeof(int64_t), 256, Byte2Key);
+        RadixSort((void *)list, numItems, sizeof(int64_t), 256, Byte3Key);
+        RadixSort((void *)list, numItems, sizeof(int64_t), 256, Byte4Key);
+        RadixSort((void *)list, numItems, sizeof(int64_t), 256, Byte5Key);
+        RadixSort((void *)list, numItems, sizeof(int64_t), 256, Byte6Key);
+        RadixSort((void *)list, numItems, sizeof(int64_t), 256, Byte7Key);
 
         printf("Radix sort:\n");
 
@@ -593,7 +633,7 @@ int main(int argc, char *argv[])
         printf("Number of comparisons to sort %d Items: %lu\n",
             numItems, comparisons);
 
-        if (!VerifySort((void *)list, numItems, sizeof(int),
+        if (!VerifySort((void *)list, numItems, sizeof(int64_t),
             CompareIntLessThan))
         {
             printf("ERROR: Sort results are incorrect.\n");

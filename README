@@ -30,8 +30,13 @@ FILES
 COPYING         - Rules for copying and distributing GPL software
 COPYING.LESSER  - Rules for copying and distributing LGPL software
 Makefile        - Makefile for this project (assumes gcc compiler and GNU make)
+optlist.c       - Source code for GetOptlist function and supporting functions
+optlist.h       - Header file to be included by code using the optlist library
 README          - This file
 sample.c        - Sample code demonstrating usage of the sort library
+sample64.c      - Sample code demonstrating usage of the sort library
+                  This a quick hack using int64_t to verify code works for
+                  64 bit values.
 sort.h          - Header file for the sort library
 sort.c          - Implementation of the sort library
 
@@ -50,11 +55,27 @@ Note 2: RadixSort requires uintptr_t which C99 includes in stdint.h.  It will
 
 USAGE
 -----
-Usage:  sample <number of random items>
+Usage: sample <options>
 
-The sample code will generate an unsorted list of <number of random items>
-values, then sort the list using each of the algorithms included in the library.
-The unsorted list, sorted list, and time to sort will be written to stdout.
+Options:
+  -n : number of elements to sort.
+  -i : use insertion sort
+  -b : use bubble sort
+  -s : use shell sort
+  -q : use quick sort
+  -m : use merge sort
+  -h : use heap sort
+  -r : use radix sort
+  -d : display sort results and other debug information
+  -? : Print out command line options.
+
+Default: sample -n1000
+
+The sample code will generate an unsorted list of the specified number of 32
+bit values, then sort the list using each of the algorithms specified.  If
+debug is enabled, the unsorted list, the sorted lists, and number of comparisons
+required to sort will be written to stdout.  Only the number of comparisons
+required for the sort will be written if debug is disable.
 
 AUTHOR
 ------
