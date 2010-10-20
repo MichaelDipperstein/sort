@@ -1,27 +1,15 @@
 /***************************************************************************
 *                        Sort Library Sample Usage
 *
-*   File    : sample.c
+*   File    : sample64.c
 *   Purpose : This file demonstrates the use of the sort library functions
+*             by sorting an array of 64-bit values.
 *   Author  : Michael Dipperstein
-*   Date    : August 28, 2003
+*   Date    : October 19, 2010
 *
 ****************************************************************************
-*   UPDATES
-*
-*   $Id: sample.c,v 1.7 2010/01/07 04:16:34 michael Exp $
-*   $Log: sample.c,v $
-*   Revision 1.7  2010/01/07 04:16:34  michael
-*   - Clean-up compiler warnings.
-*   - Reduce the amount of compares for a Radix sort.
-*
-*   Revision 1.6  2007/09/29 01:51:52  michael
-*   Changes required for LGPL v3.
-*
-*
-****************************************************************************
-* sample: A sort library sample program
-* Copyright (C) 2003, 2007 by
+* sample64: A sort library sample program
+* Copyright (C) 2010
 *       Michael Dipperstein (mdipper@alumni.engr.ucsb.edu)
 *
 * This file is part of the sort library.

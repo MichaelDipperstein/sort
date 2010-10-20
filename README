@@ -71,11 +71,21 @@ Options:
 
 Default: sample -n1000
 
-The sample code will generate an unsorted list of the specified number of 32
-bit values, then sort the list using each of the algorithms specified.  If
+The sample code will generate an unsorted list of the specified number of
+integer values, then sort the list using each of the algorithms specified.  If
 debug is enabled, the unsorted list, the sorted lists, and number of comparisons
 required to sort will be written to stdout.  Only the number of comparisons
 required for the sort will be written if debug is disable.
+
+KNOWN BUGS
+----------
+I have received a report that sorting large sets (>2^24 values) of 64-bit
+integers frequently fails when attempted on PowerPC system running 64-bit Linux.
+I have been unable to duplicate the problem on 32-bit x86 platforms and do not
+have a 64-bit platform to test on.
+
+Another error may occur when the number of bytes being sorted exceeds the
+capacity of size_t.
 
 AUTHOR
 ------
