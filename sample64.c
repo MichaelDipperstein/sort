@@ -35,12 +35,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <time.h>
 #include <limits.h>
 #include <stdint.h>
 #include <inttypes.h>
 #include "sort.h"
 #include "optlist.h"
+#include "mwc.h"
 
 /***************************************************************************
 *                            TYPE DEFINITIONS
@@ -84,25 +84,24 @@ void ShowUsage(char *progPath);
 ***************************************************************************/
 int CompareIntLessThan(const void *x, const void *y)
 {
-    int64_t diff;
+    int result;
 
     comparisons++;
-    diff = (*(int64_t *)x - *(int64_t *)y);
 
-    if (diff < 0)
+    if (*(int64_t *)x < *(int64_t *)y)
     {
-        diff = -1;
+        result = -1;
     }
-    else if (diff > 0)
+    else if (*(int64_t *)x > *(int64_t *)y)
     {
-        diff = 1;
+        result = 1;
     }
     else
     {
-        diff = 0;
+        result = 0;
     }
 
-    return diff;
+    return result;
 }
 
 /***************************************************************************
@@ -112,31 +111,30 @@ int CompareIntLessThan(const void *x, const void *y)
 *   Parameters : x - a pointer to an integer recast as a pointer to void
 *                y - a pointer to an integer recast as a pointer to void
 *   Effects    : NONE
-*   Returned   : compareFunc(x, y) < 0  iff x preceeds y
+*   Returned   : compareFunc(x, y) > 0  iff x preceeds y
 *                compareFunc(x, y) = 0  iff x and y are ordered the same
-*                compareFunc(x, y) > 0  iff y preceeds x
+*                compareFunc(x, y) < 0  iff y preceeds x
 ***************************************************************************/
 int CompareIntGreaterThan(const void *x, const void *y)
 {
-    int64_t diff;
+    int result;
 
     comparisons++;
-    diff = (*(int64_t *)y - *(int64_t *)x);
 
-    if (diff < 0)
+    if (*(int64_t *)x > *(int64_t *)y)
     {
-        diff = -1;
+        result = -1;
     }
-    else if (diff > 0)
+    else if (*(int64_t *)x < *(int64_t *)y)
     {
-        diff = 1;
+        result = 1;
     }
     else
     {
-        diff = 0;
+        result = 0;
     }
 
-    return diff;
+    return result;
 }
 
 /***************************************************************************
@@ -151,9 +149,13 @@ int CompareIntGreaterThan(const void *x, const void *y)
 ***************************************************************************/
 unsigned int Byte0Key(const void *value)
 {
-    /* return byte 0 of an int */
+    uint64_t asUnsigned;
+
     comparisons++;
-    return (unsigned int)((*(int64_t *)value) & 0xFF);
+    
+    asUnsigned = (*(int64_t *)value) - INT64_MIN;
+
+    return (unsigned int)(asUnsigned & 0xFF);
 }
 
 /***************************************************************************
@@ -168,9 +170,13 @@ unsigned int Byte0Key(const void *value)
 ***************************************************************************/
 unsigned int Byte1Key(const void *value)
 {
-    /* return byte 1 of an int */
+    uint64_t asUnsigned;
+
     comparisons++;
-    return (unsigned int)(((*(int64_t *)value) >> 8) & 0xFF);
+    
+    asUnsigned = (*(int64_t *)value) - INT64_MIN;
+
+    return (unsigned int)((asUnsigned >> 8) & 0xFF);
 }
 
 /***************************************************************************
@@ -185,9 +191,13 @@ unsigned int Byte1Key(const void *value)
 ***************************************************************************/
 unsigned int Byte2Key(const void *value)
 {
-    /* return byte 2 of an int */
+    uint64_t asUnsigned;
+
     comparisons++;
-    return (unsigned int)(((*(int64_t *)value) >> 16) & 0xFF);
+    
+    asUnsigned = (*(int64_t *)value) - INT64_MIN;
+
+    return (unsigned int)((asUnsigned >> 16) & 0xFF);
 }
 
 /***************************************************************************
@@ -202,9 +212,13 @@ unsigned int Byte2Key(const void *value)
 ***************************************************************************/
 unsigned int Byte3Key(const void *value)
 {
-    /* return byte 3 of an int */
+    uint64_t asUnsigned;
+
     comparisons++;
-    return (unsigned int)(((*(int64_t *)value) >> 24) & 0xFF);
+    
+    asUnsigned = (*(int64_t *)value) - INT64_MIN;
+
+    return (unsigned int)((asUnsigned >> 24) & 0xFF);
 }
 
 /***************************************************************************
@@ -219,9 +233,13 @@ unsigned int Byte3Key(const void *value)
 ***************************************************************************/
 unsigned int Byte4Key(const void *value)
 {
-    /* return byte 4 of an int */
+    uint64_t asUnsigned;
+
     comparisons++;
-    return (unsigned int)(((*(int64_t *)value) >> 32) & 0xFF);
+    
+    asUnsigned = (*(int64_t *)value) - INT64_MIN;
+
+    return (unsigned int)((asUnsigned >> 32) & 0xFF);
 }
 
 /***************************************************************************
@@ -236,9 +254,13 @@ unsigned int Byte4Key(const void *value)
 ***************************************************************************/
 unsigned int Byte5Key(const void *value)
 {
-    /* return byte 5 of an int */
+    uint64_t asUnsigned;
+
     comparisons++;
-    return (unsigned int)(((*(int64_t *)value) >> 40) & 0xFF);
+    
+    asUnsigned = (*(int64_t *)value) - INT64_MIN;
+
+    return (unsigned int)((asUnsigned >> 40) & 0xFF);
 }
 
 /***************************************************************************
@@ -253,9 +275,13 @@ unsigned int Byte5Key(const void *value)
 ***************************************************************************/
 unsigned int Byte6Key(const void *value)
 {
-    /* return byte 6 of an int */
+    uint64_t asUnsigned;
+
     comparisons++;
-    return (unsigned int)(((*(int64_t *)value) >> 48) & 0xFF);
+    
+    asUnsigned = (*(int64_t *)value) - INT64_MIN;
+
+    return (unsigned int)((asUnsigned >> 48) & 0xFF);
 }
 
 /***************************************************************************
@@ -270,9 +296,13 @@ unsigned int Byte6Key(const void *value)
 ***************************************************************************/
 unsigned int Byte7Key(const void *value)
 {
-    /* return byte 7 of an int */
+    uint64_t asUnsigned;
+
     comparisons++;
-    return (unsigned int)(((*(int64_t *)value) >> 56) & 0xFF);
+    
+    asUnsigned = (*(int64_t *)value) - INT64_MIN;
+
+    return (unsigned int)((asUnsigned >> 56) & 0xFF);
 }
 
 /***************************************************************************
@@ -290,7 +320,7 @@ void DumpList(int64_t *list, size_t numItems)
 
     for (i = 0; i < numItems; i++)
     {
-        printf("%016" PRIX64 " ", list[i]);
+        printf("%020" PRIi64 " ", list[i]);
     }
 
     printf("\n");
@@ -312,8 +342,8 @@ int main(int argc, char *argv[])
     size_t numItems;                    /* number of items sorted */
     int64_t *list, *unsorted;           /* items to be sorted */
     size_t i;                           /* counter */
-    time_t timer;                       /* time - used for random seed */
     unsigned char debug;                /* non-zero prints debug messages */
+    mwc_seed_t seed;                    /* seed used for random numbers */
     sort_method_t methods;
     option_t *optList, *thisOpt;
 
@@ -424,16 +454,10 @@ int main(int argc, char *argv[])
     }
 
     /* create and display unsorted list of items */
-    srand((unsigned int)time(&timer));
+    InitializeSeed(&seed);
     for (i = 0; i < numItems; i++)
     {
-        unsorted[i] = rand();
-
-        if (sizeof(int) == 4)
-        {
-            unsorted[i] <<= 32;
-            unsorted[i] |= rand();
-        }
+        unsorted[i] = RandMWC64(&seed);
     }
 
     if (debug)

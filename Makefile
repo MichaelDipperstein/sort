@@ -29,14 +29,18 @@ sample$(EXE):	sample.o sort.o liboptlist.a
 sample.o:	sample.c sort.h optlist.h
 		$(CC) $(CFLAGS) $<
 
-sample64$(EXE):	sample64.o sort.o liboptlist.a
+sample64$(EXE):	sample64.o sort.o mwc.o liboptlist.a
 		$(LD) $^ $(LIBS) $(LDFLAGS) $@
 
-sample64.o:	sample64.c sort.h optlist.h
+sample64.o:	sample64.c sort.h optlist.h mwc.h
 		$(CC) $(C99FLAGS) $<
 
 sort.o:		sort.c sort.h
 		$(CC) $(CFLAGS) $<
+
+mwc.o:		mwc.c mwc.h
+		$(CC) $(C99FLAGS) $<
+
 
 liboptlist.a:	optlist.o
 		ar crv liboptlist.a optlist.o
