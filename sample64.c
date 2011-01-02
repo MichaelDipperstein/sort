@@ -33,9 +33,7 @@
 *                             INCLUDED FILES
 ***************************************************************************/
 #include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
-#include <limits.h>
 #include <stdint.h>
 #include <inttypes.h>
 #include "sort.h"
@@ -74,9 +72,9 @@ void ShowUsage(char *progPath);
 /***************************************************************************
 *   Function   : CompareIntLessThan
 *   Description: This function may be used by my sort library (and qsort)
-*                to order integers in assending order.
-*   Parameters : x - a pointer to an integer recast as a pointer to void
-*                y - a pointer to an integer recast as a pointer to void
+*                to order 64 bit signed integers in assending order.
+*   Parameters : x - a pointer to an int64_t recast as a pointer to void
+*                y - a pointer to an int64_t recast as a pointer to void
 *   Effects    : NONE
 *   Returned   : compareFunc(x, y) < 0  iff x preceeds y
 *                compareFunc(x, y) = 0  iff x and y are ordered the same
@@ -107,9 +105,9 @@ int CompareIntLessThan(const void *x, const void *y)
 /***************************************************************************
 *   Function   : CompareIntGreaterThan
 *   Description: This function may be used by my sort library (and qsort)
-*                to order integers in decending order.
-*   Parameters : x - a pointer to an integer recast as a pointer to void
-*                y - a pointer to an integer recast as a pointer to void
+*                to order 64 bit signed integers in decending order.
+*   Parameters : x - a pointer to an int64_t recast as a pointer to void
+*                y - a pointer to an int64_t recast as a pointer to void
 *   Effects    : NONE
 *   Returned   : compareFunc(x, y) > 0  iff x preceeds y
 *                compareFunc(x, y) = 0  iff x and y are ordered the same
@@ -140,12 +138,11 @@ int CompareIntGreaterThan(const void *x, const void *y)
 /***************************************************************************
 *   Function   : Byte0Key
 *   Description: This function may be used by my RadixSort function to
-*                to order integers in descending order.  It provides byte 0
-*                of the value (counting from the LSB) to be used as the
-*                first pass of a radix sort.
-*   Parameters : value - a pointer to an integer recast as a pointer to void
+*                to order int64_t values.  It provides a key for radix
+*                sorting on byte 0 of the value (counting from the LSB).
+*   Parameters : value - a pointer to an int64_t recast as a pointer to void
 *   Effects    : NONE
-*   Returned   : Byte 0 (counting from the LSB)
+*   Returned   : Sort key for byte 0 of an int64_t (counting from the LSB)
 ***************************************************************************/
 unsigned int Byte0Key(const void *value)
 {
@@ -161,12 +158,11 @@ unsigned int Byte0Key(const void *value)
 /***************************************************************************
 *   Function   : Byte1Key
 *   Description: This function may be used by my RadixSort function to
-*                to order integers in descending order.  It provides byte 1
-*                of the value (counting from the LSB) to be used as the
-*                second pass of a radix sort.
-*   Parameters : value - a pointer to an integer recast as a pointer to void
+*                to order int64_t values.  It provides a key for radix
+*                sorting on byte 1 of the value (counting from the LSB).
+*   Parameters : value - a pointer to an int64_t recast as a pointer to void
 *   Effects    : NONE
-*   Returned   : Byte 1 (counting from the LSB)
+*   Returned   : Sort key for byte 1 of an int64_t (counting from the LSB)
 ***************************************************************************/
 unsigned int Byte1Key(const void *value)
 {
@@ -182,12 +178,11 @@ unsigned int Byte1Key(const void *value)
 /***************************************************************************
 *   Function   : Byte2Key
 *   Description: This function may be used by my RadixSort function to
-*                to order integers in descending order.  It provides byte 2
-*                of the value (counting from the LSB) to be used as the
-*                third pass of a radix sort.
-*   Parameters : value - a pointer to an integer recast as a pointer to void
+*                to order int64_t values.  It provides a key for radix
+*                sorting on byte 2 of the value (counting from the LSB).
+*   Parameters : value - a pointer to an int64_t recast as a pointer to void
 *   Effects    : NONE
-*   Returned   : Byte 2 (counting from the LSB)
+*   Returned   : Sort key for byte 2 of an int64_t (counting from the LSB)
 ***************************************************************************/
 unsigned int Byte2Key(const void *value)
 {
@@ -203,12 +198,11 @@ unsigned int Byte2Key(const void *value)
 /***************************************************************************
 *   Function   : Byte3Key
 *   Description: This function may be used by my RadixSort function to
-*                to order integers in descending order.  It provides byte 3
-*                of the value (counting from the LSB) to be used as the
-*                fourth pass of a radix sort.
-*   Parameters : value - a pointer to an integer recast as a pointer to void
+*                to order int64_t values.  It provides a key for radix
+*                sorting on byte 3 of the value (counting from the LSB).
+*   Parameters : value - a pointer to an int64_t recast as a pointer to void
 *   Effects    : NONE
-*   Returned   : Byte 3 (counting from the LSB)
+*   Returned   : Sort key for byte 3 of an int64_t (counting from the LSB)
 ***************************************************************************/
 unsigned int Byte3Key(const void *value)
 {
@@ -224,12 +218,11 @@ unsigned int Byte3Key(const void *value)
 /***************************************************************************
 *   Function   : Byte4Key
 *   Description: This function may be used by my RadixSort function to
-*                to order integers in descending order.  It provides byte 4
-*                of the value (counting from the LSB) to be used as the
-*                fifth pass of a radix sort.
-*   Parameters : value - a pointer to an integer recast as a pointer to void
+*                to order int64_t values.  It provides a key for radix
+*                sorting on byte 4 of the value (counting from the LSB).
+*   Parameters : value - a pointer to an int64_t recast as a pointer to void
 *   Effects    : NONE
-*   Returned   : Byte 4 (counting from the LSB)
+*   Returned   : Sort key for byte 4 of an int64_t (counting from the LSB)
 ***************************************************************************/
 unsigned int Byte4Key(const void *value)
 {
@@ -245,12 +238,11 @@ unsigned int Byte4Key(const void *value)
 /***************************************************************************
 *   Function   : Byte5Key
 *   Description: This function may be used by my RadixSort function to
-*                to order integers in descending order.  It provides byte 5
-*                of the value (counting from the LSB) to be used as the
-*                sixth pass of a radix sort.
-*   Parameters : value - a pointer to an integer recast as a pointer to void
+*                to order int64_t values.  It provides a key for radix
+*                sorting on byte 5 of the value (counting from the LSB).
+*   Parameters : value - a pointer to an int64_t recast as a pointer to void
 *   Effects    : NONE
-*   Returned   : Byte 5 (counting from the LSB)
+*   Returned   : Sort key for byte 5 of an int64_t (counting from the LSB)
 ***************************************************************************/
 unsigned int Byte5Key(const void *value)
 {
@@ -266,12 +258,11 @@ unsigned int Byte5Key(const void *value)
 /***************************************************************************
 *   Function   : Byte6Key
 *   Description: This function may be used by my RadixSort function to
-*                to order integers in descending order.  It provides byte 6
-*                of the value (counting from the LSB) to be used as the
-*                seventh pass of a radix sort.
-*   Parameters : value - a pointer to an integer recast as a pointer to void
+*                to order int64_t values.  It provides a key for radix
+*                sorting on byte 6 of the value (counting from the LSB).
+*   Parameters : value - a pointer to an int64_t recast as a pointer to void
 *   Effects    : NONE
-*   Returned   : Byte 6 (counting from the LSB)
+*   Returned   : Sort key for byte 6 of an int64_t (counting from the LSB)
 ***************************************************************************/
 unsigned int Byte6Key(const void *value)
 {
@@ -287,12 +278,11 @@ unsigned int Byte6Key(const void *value)
 /***************************************************************************
 *   Function   : Byte7Key
 *   Description: This function may be used by my RadixSort function to
-*                to order integers in descending order.  It provides byte 7
-*                of the value (counting from the LSB) to be used as the
-*                eighth pass of a radix sort.
-*   Parameters : value - a pointer to an integer recast as a pointer to void
+*                to order int64_t values.  It provides a key for radix
+*                sorting on byte 7 of the value (counting from the LSB).
+*   Parameters : value - a pointer to an int64_t recast as a pointer to void
 *   Effects    : NONE
-*   Returned   : Byte 7 (counting from the LSB)
+*   Returned   : Sort key for byte 7 of an int64_t (counting from the LSB)
 ***************************************************************************/
 unsigned int Byte7Key(const void *value)
 {
@@ -329,11 +319,11 @@ void DumpList(int64_t *list, size_t numItems)
 /***************************************************************************
 *   Function   : main
 *   Description: This function is the entry point for this program.  It
-*                creates an array of argv[1] unsorted integers and uses
-*                each of the sort functions to sort the array.
+*                creates an array of argv[1] unsorted int64_t and uses
+*                the specified sort functions to sort the array.
 *   Parameters : argc - number of arguments
-*                argv - array of arguement values.  argv[1] should be the
-*                       number of integers to sort.
+*                argv - an array of arguement values.  See ShowUsage for
+*                       acceptable values
 *   Effects    : Unsorted and sorted arrays are dumped to stdout.
 *   Returned   : 0 for failure.  1 for success.
 ***************************************************************************/

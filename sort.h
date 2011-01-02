@@ -42,6 +42,8 @@
 *
 ***************************************************************************/
 
+#ifndef _SORT_H_
+#define _SORT_H_
 /***************************************************************************
 *                             INCLUDED FILES
 ***************************************************************************/
@@ -50,8 +52,13 @@
 /***************************************************************************
 *                                CONSTANTS
 ***************************************************************************/
+#ifndef FALSE
 #define FALSE           0
+#endif
+
+#ifndef TRUE
 #define TRUE            1
+#endif
 
 /***************************************************************************
 *                               PROTOTYPES
@@ -87,3 +94,5 @@ void RadixSort(void *list, size_t numItems, size_t itemSize,
 /* tests sorts results */
 int VerifySort(void *list, size_t numItems, size_t itemSize,
     int (*compareFunc) (const void *, const void *));
+
+#endif /* _SORT_H_ */

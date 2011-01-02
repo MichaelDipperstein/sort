@@ -48,7 +48,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
-#include <limits.h>
 #include "sort.h"
 #include "optlist.h"
 
