@@ -7,21 +7,8 @@
 *   Date    : August 28, 2003
 *
 ****************************************************************************
-*   UPDATES
-*
-*   $Id: sample.c,v 1.7 2010/01/07 04:16:34 michael Exp $
-*   $Log: sample.c,v $
-*   Revision 1.7  2010/01/07 04:16:34  michael
-*   - Clean-up compiler warnings.
-*   - Reduce the amount of compares for a Radix sort.
-*
-*   Revision 1.6  2007/09/29 01:51:52  michael
-*   Changes required for LGPL v3.
-*
-*
-****************************************************************************
 * sample: A sort library sample program
-* Copyright (C) 2003, 2007 by
+* Copyright (C) 2003, 2007, 2017 by
 *       Michael Dipperstein (mdipper@alumni.engr.ucsb.edu)
 *
 * This file is part of the sort library.
@@ -49,7 +36,7 @@
 #include <string.h>
 #include <time.h>
 #include "sort.h"
-#include "optlist.h"
+#include "optlist/optlist.h"
 
 /***************************************************************************
 *                            TYPE DEFINITIONS
@@ -387,14 +374,14 @@ int main(int argc, char *argv[])
     unsorted = (int *)malloc(numItems * sizeof(int));
     if (unsorted == NULL)
     {
-        printf("Unable to allocate storage for %d items.\n", numItems);
+        printf("Unable to allocate storage for %ld items.\n", numItems);
         return EXIT_FAILURE;
     }
 
     list = (int *)malloc(numItems * sizeof(int));
     if (list == NULL)
     {
-        printf("Unable to allocate storage for %d items.\n", numItems);
+        printf("Unable to allocate storage for %ld items.\n", numItems);
         free(unsorted);
         return EXIT_FAILURE;
     }
@@ -427,7 +414,7 @@ int main(int argc, char *argv[])
             DumpList(list, numItems);
         }
 
-        printf("Number of comparisons to sort %d Items: %lu\n",
+        printf("Number of comparisons to sort %ld Items: %lu\n",
             numItems, comparisons);
 
         if (!VerifySort((void *)list, numItems, sizeof(int),
@@ -453,7 +440,7 @@ int main(int argc, char *argv[])
             DumpList(list, numItems);
         }
 
-        printf("Number of comparisons to sort %d Items: %lu\n",
+        printf("Number of comparisons to sort %ld Items: %lu\n",
             numItems, comparisons);
 
         if (!VerifySort((void *)list, numItems, sizeof(int),
@@ -478,7 +465,7 @@ int main(int argc, char *argv[])
             DumpList(list, numItems);
         }
 
-        printf("Number of comparisons to sort %d Items: %lu\n",
+        printf("Number of comparisons to sort %ld Items: %lu\n",
             numItems, comparisons);
 
         if (!VerifySort((void *)list, numItems, sizeof(int),
@@ -503,7 +490,7 @@ int main(int argc, char *argv[])
             DumpList(list, numItems);
         }
 
-        printf("Number of comparisons to sort %d Items: %lu\n",
+        printf("Number of comparisons to sort %ld Items: %lu\n",
             numItems, comparisons);
 
         if (!VerifySort((void *)list, numItems, sizeof(int),
@@ -528,7 +515,7 @@ int main(int argc, char *argv[])
             DumpList(list, numItems);
         }
 
-        printf("Number of comparisons to sort %d Items: %lu\n",
+        printf("Number of comparisons to sort %ld Items: %lu\n",
             numItems, comparisons);
 
         if (!VerifySort((void *)list, numItems, sizeof(int),
@@ -553,7 +540,7 @@ int main(int argc, char *argv[])
             DumpList(list, numItems);
         }
 
-        printf("Number of comparisons to sort %d Items: %lu\n",
+        printf("Number of comparisons to sort %ld Items: %lu\n",
             numItems, comparisons);
 
         if (!VerifySort((void *)list, numItems, sizeof(int),
@@ -589,7 +576,7 @@ int main(int argc, char *argv[])
             DumpList(list, numItems);
         }
 
-        printf("Number of comparisons to sort %d Items: %lu\n",
+        printf("Number of comparisons to sort %ld Items: %lu\n",
             numItems, comparisons);
 
         if (!VerifySort((void *)list, numItems, sizeof(int),
