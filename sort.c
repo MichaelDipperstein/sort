@@ -57,6 +57,11 @@
 /***************************************************************************
 *                            TYPE DEFINITIONS
 ***************************************************************************/
+typedef enum
+{
+    FALSE,
+    TRUE
+} bool_t;
 
 /***************************************************************************
 *                                 MACROS
@@ -70,7 +75,7 @@
 /***************************************************************************
 *                               PROTOTYPES
 ***************************************************************************/
-void SiftDown(void *list, size_t root, size_t lastChild, size_t itemSize,
+static void SiftDown(void *list, size_t root, size_t lastChild, size_t itemSize,
     int (*compareFunc) (const void *, const void *), void *temp);
 
 /***************************************************************************
@@ -173,14 +178,14 @@ void BubbleSort(void *list, size_t numItems, size_t itemSize,
     int (*compareFunc) (const void *, const void *))
 {
     size_t i, endItem;
-    char done = FALSE;  /* true if no swaps last pass */
+    bool_t done = FALSE;    /* true if no swaps last pass */
     void *temp;
 
     /* create temporary swap variable */
     temp = malloc(itemSize);
     assert(temp != NULL);
 
-    while (!done)
+    while (TRUE != done)
     {
         done = TRUE;
         numItems--;     /* one less item left to sort after each pass */
@@ -291,7 +296,7 @@ void QuickSort(void *list, size_t numItems, size_t itemSize,
         left = 0;
         right = (numItems  - 1) * itemSize;
 
-        while(TRUE)
+        while(!0)
         {
             /* seek until something on left partition is too large */
             while (left < right)

@@ -431,14 +431,14 @@ int main(int argc, char *argv[])
     unsorted = (int64_t *)malloc(numItems * sizeof(int64_t));
     if (unsorted == NULL)
     {
-        printf("Unable to allocate storage for %d items.\n", numItems);
+        printf("Unable to allocate storage for %lu items.\n", numItems);
         return EXIT_FAILURE;
     }
 
     list = (int64_t *)malloc(numItems * sizeof(int64_t));
     if (list == NULL)
     {
-        printf("Unable to allocate storage for %d items.\n", numItems);
+        printf("Unable to allocate storage for %lu items.\n", numItems);
         free(unsorted);
         return EXIT_FAILURE;
     }
@@ -472,7 +472,7 @@ int main(int argc, char *argv[])
             DumpList(list, numItems);
         }
 
-        printf("Number of comparisons to sort %d Items: %lu\n",
+        printf("Number of comparisons to sort %luS Items: %lu\n",
             numItems, comparisons);
 
         if (!VerifySort((void *)list, numItems, sizeof(int64_t),
@@ -498,7 +498,7 @@ int main(int argc, char *argv[])
             DumpList(list, numItems);
         }
 
-        printf("Number of comparisons to sort %d Items: %lu\n",
+        printf("Number of comparisons to sort %lu Items: %lu\n",
             numItems, comparisons);
 
         if (!VerifySort((void *)list, numItems, sizeof(int64_t),
@@ -523,7 +523,7 @@ int main(int argc, char *argv[])
             DumpList(list, numItems);
         }
 
-        printf("Number of comparisons to sort %d Items: %lu\n",
+        printf("Number of comparisons to sort %lu Items: %lu\n",
             numItems, comparisons);
 
         if (!VerifySort((void *)list, numItems, sizeof(int64_t),
@@ -548,7 +548,7 @@ int main(int argc, char *argv[])
             DumpList(list, numItems);
         }
 
-        printf("Number of comparisons to sort %d Items: %lu\n",
+        printf("Number of comparisons to sort %lu Items: %lu\n",
             numItems, comparisons);
 
         if (!VerifySort((void *)list, numItems, sizeof(int64_t),
@@ -573,7 +573,7 @@ int main(int argc, char *argv[])
             DumpList(list, numItems);
         }
 
-        printf("Number of comparisons to sort %d Items: %lu\n",
+        printf("Number of comparisons to sort %lu Items: %lu\n",
             numItems, comparisons);
 
         if (!VerifySort((void *)list, numItems, sizeof(int64_t),
@@ -598,7 +598,7 @@ int main(int argc, char *argv[])
             DumpList(list, numItems);
         }
 
-        printf("Number of comparisons to sort %d Items: %lu\n",
+        printf("Number of comparisons to sort %lu Items: %lu\n",
             numItems, comparisons);
 
         if (!VerifySort((void *)list, numItems, sizeof(int64_t),
@@ -632,7 +632,7 @@ int main(int argc, char *argv[])
             DumpList(list, numItems);
         }
 
-        printf("Number of comparisons to sort %d Items: %lu\n",
+        printf("Number of comparisons to sort %lu Items: %lu\n",
             numItems, comparisons);
 
         if (!VerifySort((void *)list, numItems, sizeof(int64_t),
