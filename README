@@ -44,6 +44,10 @@ command line.
 Note: The Makefile assumes the use of gcc in a Linux or Windows environment.
 Other environments may require customization.
 
+GIT NOTE: Updates to the optlist subtree don't get pulled by "git pull"
+Use the following commands to pull its updates:
+git subtree pull --prefix optlist https://github.com/MichaelDipperstein/optlist.git master --squash
+
 USAGE
 -----
 Usage: sample <options>
